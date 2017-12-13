@@ -4,18 +4,16 @@
   </head>
   <body>
     <div>
-      <input type='text' id='inputMsg' placeHolder='Enter text'>
-      <input type='button' id='send' value='Send'>
+      <input type='button' id='generateTokenBtn' value='Generate Token'>
     </div>
     <div><p id='generatedToken'></p></div>
+    <p> ------ For reciever ------- </p>
     <div>
-      <input type='text' id='token' placeholder="paste another client copied token">
-      <input type="button" id='connect' value='Copy Or Connect'>
+      <input type='text' id='tokenInput' placeholder="paste received token">
+      <input type="button" id='connect' value='Connect Peer'>
     </div>
-    <div id='connected'>
-      <p id='peerId'></p>
-    </div>
+    <div><a id='connectedPeer'></p></div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src='/script/rtcClient.js'></script>
+    <script src='/script/socketClient.js'></script>
   </body>
 </html>
