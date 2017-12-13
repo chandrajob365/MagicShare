@@ -13,10 +13,14 @@ server.listen(process.env.PORT || 8080, () => {
 
 io.on('connection', socket => {
   let token = socket.handshake.query.token
+  console.log('[connection] token = ', token)
   updateSocketAndPairs(socket, token)
   emitPeerMsg(socket, token)
   generateToken(socket)
+  activateSenderProfile(socket)
   connectPeers(socket)
+  msgToSender(socket)
+  msgToReceiver(socket)
   scrapToken(socket)
   disconnect(socket)
 })
@@ -27,9 +31,11 @@ const isExist = token => {
 
 const updateSocketAndPairs = (socket, token) => {
   if (isExist(token)) {
+    console.log('[updateSocketAndPairs] isExit true')
     socketDetails[socket.id] = {socket: socket}
     pairedSockets[token] = {senderId: token, recieverId: socket.id}
   } else {
+    console.log('[updateSocketAndPairs] isExit False')
     socketDetails[socket.id] = {socket: socket}
   }
 }
@@ -37,15 +43,10 @@ const updateSocketAndPairs = (socket, token) => {
 const emitPeerMsg = (socket, token) => {
   let peer = pairedSockets[token]
   if (peer) {
-    let peerSocket = socketDetails[peer.senderId]
-    peerSocket.socket.emit('peerConnected', {
-      self: peerSocket.socket.id,
-      peer: socket.id,
-      type: 'sender'
-    })
+    console.log('[emitPeerMsg] peer exist')
     socket.emit('peerConnected', {
-      self: socket.id,
-      peer: peerSocket.socket.id,
+      fileReceiver: socket.id,
+      fileSender: peer.senderId,
       type: 'reciever'
     })
   } else {
@@ -61,10 +62,35 @@ const generateToken = socket => {
   })
 }
 
+const activateSenderProfile = socket => {
+  socket.on('activateSenderProfile', msg => {
+    console.log('[activateSenderProfile] msg.fileReceiver = ', msg.fileReceiver, '  msg.fileSender = ', msg.fileSender)
+    socketDetails[msg.fileSender].socket.emit('activateSenderProfile', {
+      type: 'activateSenderProfile',
+      fileReceiver: msg.fileReceiver,
+      fileSender: msg.fileSender
+    })
+  })
+}
+
 const connectPeers = socket => {
   socket.on('connectPeers', msg => {
     pairedSockets[msg.token] = {senderId: msg.token, recieverId: socket.id}
     emitPeerMsg(socket, msg.token)
+  })
+}
+
+const msgToSender = socket => {
+  socket.on('toFileSender', msg => {
+    console.log('[toFileSender], msg = ', msg)
+    socketDetails[msg.fileSender].socket.emit('fileSender', msg)
+  })
+}
+
+const msgToReceiver = socket => {
+  socket.on('toFileReciever', msg => {
+    console.log('[toFileReciever], msg = ', msg)
+    socketDetails[msg.fileReceiver].socket.emit('fileReciever', msg)
   })
 }
 
