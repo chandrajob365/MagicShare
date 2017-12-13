@@ -6,14 +6,17 @@
     <div>
       <input type='button' id='generateTokenBtn' value='Generate Token'>
     </div>
+    <div><p id='generatedURL'></p></div>
     <div><p id='generatedToken'></p></div>
     <p> ------ For reciever ------- </p>
     <div>
       <input type='text' id='tokenInput' placeholder="paste received token">
       <input type="button" id='connect' value='Connect Peer'>
     </div>
-    <div><a id='connectedPeer'></p></div>
+    <div><a id='connectedPeer'></a></div>
+    <div><p id='msgReceived'></p></div>
     <script src="/socket.io/socket.io.js"></script>
+    <script src='/script/rtcClient.js'></script>
     <script src='/script/socketClient.js'></script>
   </body>
 </html>
