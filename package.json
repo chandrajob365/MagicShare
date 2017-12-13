@@ -1,7 +1,7 @@
 {
   "name": "MagicShare",
   "version": "0.0.1",
-  "description": "",
+  "description": "Share File/data over Webrtc protocol",
   "main": "app.js",
   "scripts": {
     "start": "nodemon"
