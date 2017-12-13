@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>MagicShare</title>
+  </head>
+  <body>
+    <div>
+      <input type='text' id='inputMsg' placeHolder='Enter text'>
+      <input type='button' id='send' value='Send'>
+    </div>
+    <div><p id='generatedToken'></p></div>
+    <div>
+      <input type='text' id='token' placeholder="paste another client copied token">
+      <input type="button" id='connect' value='Copy Or Connect'>
+    </div>
+    <div id='connected'>
+      <p id='peerId'></p>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src='/script/rtcClient.js'></script>
+  </body>
+</html>
