@@ -1,8 +1,8 @@
 const socket = io(document.URL)
 const $ = id => document.getElementById(id)
 const generateTokenBtn = $('generateTokenBtn')
+const generatedURL = $('generatedURL')
 const generatedToken = $('generatedToken')
-const connectedPeer = $('connectedPeer')
 const tokenInput = $('tokenInput')
 const connect = $('connect')
 
@@ -21,7 +21,8 @@ connect.addEventListener('click', event => {
 socket.on('tokenGenerated', msg => {
   let URLString = document.URL + '?token=' + msg.token
   let genURL = URLString.link(URLString)
-  generatedToken.innerHTML = 'Share URL with other peer to exchange files -> ' + genURL
+  generatedURL.innerHTML = 'Share URL with other peer to exchange files -> ' + genURL
+  generatedToken.innerHTML = 'OR  Use token to paste in text box ' + msg.token
   disableConnectDiv()
 })
 
@@ -29,9 +30,16 @@ socket.on('peerConnected', msg => {
   if (msg.type === 'reciever') {
     generateTokenBtn.style.display = 'none'
     disableConnectDiv()
+    socket.on('fileReciever', handleRecieverFlowMsg) // In rtcClient.js
+    socket.emit('activateSenderProfile', {
+      type: 'activateSender',
+      fileReceiver: msg.fileReceiver,
+      fileSender: msg.fileSender
+    })
   }
-  connectedPeer.innerHTML = 'Connection established with peer : ' + msg.peer
 })
+
+socket.on('activateSenderProfile', setSenderProfile)
 
 const disableConnectDiv = () => {
   tokenInput.setAttribute('disabled', true)
