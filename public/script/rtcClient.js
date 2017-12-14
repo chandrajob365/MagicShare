@@ -52,6 +52,9 @@ const receiveChannelCallback = event => {
 const handleReceiveMessage = event => {
   console.log('handleReceiveMessage, event =', event)
   $('msgReceived').innerHTML = event.data
+  // This needs to be called when complete msg has been received
+  // gracefullyTerminateRTCConnection()
+  window.setTimeout(closeConnection, 3000)
 }
 
 const handleReceiveChannelStatusChange = event => {
@@ -59,6 +62,7 @@ const handleReceiveChannelStatusChange = event => {
     let state = rtcObj.chunkDataChannel.readyState
     if (state === 'closed') {
       console.log('[handleReceiveChannelStatusChange] chunkDataChannel Closed..')
+      console.log('[handleReceiveChannelStatusChange] rtcObj.chunkDataChannel = ', rtcObj.chunkDataChannel)
     } else if (state === 'open') {
       console.log('[handleReceiveChannelStatusChange] chunkDataChannel Opened..')
     }
@@ -162,9 +166,19 @@ const handleSendChannelStatusChage = event => {
     let state = rtcObj.chunkDataChannel.readyState
     if (state === 'open') {
       console.log('[handleSendChannelStatusChage] chunkDataChannel Open...')
-      rtcObj.chunkDataChannel.send('......Hello World...')
-    } else {
-      console.log('chunkDataChannel Closing...')
+      rtcObj.chunkDataChannel.send(navigator.userAgent)
+      window.setTimeout(() => closeConnection(), 3000)
+    } else if (state === 'close') {
+      console.log('[handleSendChannelStatusChage] chunkDataChannel Closing...')
     }
   }
+}
+
+const closeConnection = () => {
+  console.log('[closeConnection] Entry')
+  if (rtcObj.chunkDataChannel) rtcObj.chunkDataChannel.close()
+  if (rtcObj.pc) rtcObj.pc.close()
+  rtcObj.pc = null
+  console.log('[closeConnection] rtcObj.pc = ', rtcObj.pc)
+  socket.emit('unregisterToken')
 }
