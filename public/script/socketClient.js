@@ -41,6 +41,13 @@ socket.on('peerConnected', msg => {
 
 socket.on('activateSenderProfile', setSenderProfile)
 
+socket.on('invalid', msg => {
+  tokenInput.value = ''
+  $('error').innerHTML = msg.token + ' is ' + msg.type
+  tokenInput.removeAttribute('disabled')
+  connect.removeAttribute('disabled')
+})
+
 const disableConnectDiv = () => {
   tokenInput.setAttribute('disabled', true)
   connect.setAttribute('disabled', true)
