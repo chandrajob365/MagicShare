@@ -1,3 +1,4 @@
+let downloadProgress = false
 const rtcObj = {
   chunkDataChannel: null,
   fileSizeDataChannel: null,
@@ -51,10 +52,11 @@ const receiveChannelCallback = event => {
 
 const handleReceiveMessage = event => {
   console.log('handleReceiveMessage, event =', event)
-  $('msgReceived').innerHTML = event.data
-  // This needs to be called when complete msg has been received
-  // gracefullyTerminateRTCConnection()
-  window.setTimeout(closeConnection, 3000)
+  if (!downloadProgress) {
+    startDownload(event.data)
+  } else {
+    progressDownload(event.data)
+  }
 }
 
 const handleReceiveChannelStatusChange = event => {
@@ -135,6 +137,7 @@ const handleSenderFlowMsg = (message) => {
 const handleSenderPeerConnection = fileReceiver => {
   createPeerConnection()
   rtcObj.chunkDataChannel = rtcObj.pc.createDataChannel('chunks')
+  rtcObj.chunkDataChannel.binaryType = 'arraybuffer'
   rtcObj.pc.createOffer().then(offer => rtcObj.pc.setLocalDescription(offer))
   .then(() => {
     socket.emit(
@@ -166,8 +169,9 @@ const handleSendChannelStatusChage = event => {
     let state = rtcObj.chunkDataChannel.readyState
     if (state === 'open') {
       console.log('[handleSendChannelStatusChage] chunkDataChannel Open...')
-      rtcObj.chunkDataChannel.send(navigator.userAgent)
-      window.setTimeout(() => closeConnection(), 3000)
+      shareFile(file)
+      // rtcObj.chunkDataChannel.send(navigator.userAgent)
+      // window.setTimeout(() => closeConnection(), 3000)
     } else if (state === 'close') {
       console.log('[handleSendChannelStatusChage] chunkDataChannel Closing...')
     }
