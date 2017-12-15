@@ -1,13 +1,23 @@
 const socket = io(document.URL)
 const $ = id => document.getElementById(id)
-const generateTokenBtn = $('generateTokenBtn')
+const shareFileBtn = $('shareFileBtn')
 const generatedURL = $('generatedURL')
 const generatedToken = $('generatedToken')
 const tokenInput = $('tokenInput')
 const connect = $('connect')
+const fileBrowser = $('browseFile')
+let file = null
 
-generateTokenBtn.addEventListener('click', event => {
+const handleFiles = () => {
+  file = fileBrowser.files[0]
+  console.log('files = ', file)
+}
+
+fileBrowser.addEventListener('change', handleFiles)
+
+shareFileBtn.addEventListener('click', event => {
   socket.emit('generateToken', socket.id)
+  fileBrowser.setAttribute('disabled', true)
 })
 
 connect.addEventListener('click', event => {
@@ -28,7 +38,7 @@ socket.on('tokenGenerated', msg => {
 
 socket.on('peerConnected', msg => {
   if (msg.type === 'reciever') {
-    generateTokenBtn.style.display = 'none'
+    shareFileBtn.style.display = 'none'
     disableConnectDiv()
     socket.on('fileReciever', handleRecieverFlowMsg) // In rtcClient.js
     socket.emit('activateSenderProfile', {
