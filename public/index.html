@@ -1,23 +1,45 @@
 <html>
   <head>
-    <title>MagicShare</title>
+    <title>Magic Share</title>
+    <link rel='stylesheet' href='./css/style.css'>
+    <link rel="stylesheet" href="./css/font-awesome.min.css">
   </head>
   <body>
-    <div>
-      <input type='button' id='generateTokenBtn' value='Generate Token'>
+    <header>
+      <p class='appName'><h2>FileShare</h2></p>
+      <i class="fa fa-download" aria-hidden="true"></i>
+    </header>
+    <div class="alert">
+        <div class="error"></div>
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
     </div>
-    <div><p id='generatedURL'></p></div>
-    <div><p id='generatedToken'></p></div>
-    <p> ------ For reciever ------- </p>
-    <div>
-      <input type='text' id='tokenInput' placeholder="paste received token">
-      <input type="button" id='connect' value='Connect Peer'>
-      <p id='error' style="color: red"></p>
-    </div>
-    <div><a id='connectedPeer'></a></div>
-    <div><p id='msgReceived'></p></div>
+    <main class='container'>
+      <div class='senderProfile'>
+        <div class='browseFile'>
+          <input type='file' id='browseFile'>
+          <input type='button' id='shareFileBtn' value='Share'>
+        </div>
+        <div class='token'>
+          <label> Share URL with intended receiver : <a id='generatedURL'></a></label>
+          <p id='generatedToken' style="margin-top: 10px;"></p>
+        </div>
+      </div>
+      <div class='receiverProfile'>
+        <input type='text' id='OTP' placeholder="Enter OTP">
+        <input type='button' id='receiveFileBtn' value='Receive File'>
+      </div>
+      <div class='fileListContainer' id='fileListContainer'>
+            <div>
+              <span class='fileName'> FileName</span>
+              <span class='size'> Size </span>
+              <span class='status'> Sent / Receive</span>
+              <span class='progress'> Progress </span>
+            </div>
+      </div>
+    </main>
     <script src="/socket.io/socket.io.js"></script>
     <script src='/script/rtcClient.js'></script>
     <script src='/script/socketClient.js'></script>
+    <script src='script/fileIO.js'></script>
   </body>
 </html>

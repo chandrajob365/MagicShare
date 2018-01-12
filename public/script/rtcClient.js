@@ -17,7 +17,6 @@ const config = {
 }
 
 const handleRecieverFlowMsg = message => {
-  console.log('[handleRecieverFlowMsg] message = ', message)
   if (!rtcObj.pc) {
     handleRecieverPeerConnection(message)
   }
@@ -25,14 +24,12 @@ const handleRecieverFlowMsg = message => {
 }
 
 const handleRecieverPeerConnection = (message) => {
-  console.log('[handleRecieverPeerConnection]')
   createPeerConnection()
   rtcObj.pc.onicecandidate = (event) => handleRecieverIceCandidateEvent(event, message)
   rtcObj.pc.ondatachannel = receiveChannelCallback
 }
 
 const handleRecieverIceCandidateEvent = (event, message) => {
-  console.log('[handleRecieverIceCandidateEvent] message = ', message)
   socket.emit('toFileSender',
     {
       type: 'new-ice-candidate',
@@ -43,7 +40,6 @@ const handleRecieverIceCandidateEvent = (event, message) => {
 }
 
 const receiveChannelCallback = event => {
-  console.log('[receiveChannelCallback] event = ', event)
   rtcObj.chunkDataChannel = event.channel
   rtcObj.chunkDataChannel.onmessage = handleReceiveMessage
   rtcObj.chunkDataChannel.onopen = handleReceiveChannelStatusChange
@@ -51,11 +47,10 @@ const receiveChannelCallback = event => {
 }
 
 const handleReceiveMessage = event => {
-  console.log('handleReceiveMessage, event =', event)
   if (!downloadProgress) {
-    startDownload(event.data)
+    startReceiving(event.data)
   } else {
-    progressDownload(event.data)
+    progressReceiving(event.data)
   }
 }
 
@@ -63,8 +58,6 @@ const handleReceiveChannelStatusChange = event => {
   if (rtcObj.chunkDataChannel) {
     let state = rtcObj.chunkDataChannel.readyState
     if (state === 'closed') {
-      console.log('[handleReceiveChannelStatusChange] chunkDataChannel Closed..')
-      console.log('[handleReceiveChannelStatusChange] rtcObj.chunkDataChannel = ', rtcObj.chunkDataChannel)
     } else if (state === 'open') {
       console.log('[handleReceiveChannelStatusChange] chunkDataChannel Opened..')
     }
@@ -73,7 +66,6 @@ const handleReceiveChannelStatusChange = event => {
 
 const createPeerConnection = () => {
   rtcObj.pc = new RTCPeerConnection(config)
-  console.log('[createPeerConnection] rtcObj.pc = ', rtcObj.pc)
 }
 
 const messageHandler = message => {
@@ -168,10 +160,7 @@ const handleSendChannelStatusChage = event => {
   if (rtcObj.chunkDataChannel) {
     let state = rtcObj.chunkDataChannel.readyState
     if (state === 'open') {
-      console.log('[handleSendChannelStatusChage] chunkDataChannel Open...')
       shareFile(file)
-      // rtcObj.chunkDataChannel.send(navigator.userAgent)
-      // window.setTimeout(() => closeConnection(), 3000)
     } else if (state === 'close') {
       console.log('[handleSendChannelStatusChage] chunkDataChannel Closing...')
     }
@@ -179,10 +168,8 @@ const handleSendChannelStatusChage = event => {
 }
 
 const closeConnection = () => {
-  console.log('[closeConnection] Entry')
   if (rtcObj.chunkDataChannel) rtcObj.chunkDataChannel.close()
   if (rtcObj.pc) rtcObj.pc.close()
   rtcObj.pc = null
-  console.log('[closeConnection] rtcObj.pc = ', rtcObj.pc)
   socket.emit('unregisterToken')
 }

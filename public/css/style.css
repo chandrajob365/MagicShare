@@ -1,0 +1,131 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Orbitron', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  margin: 8px;
+  border-bottom: 1px solid black;
+  background-color: #f7f7f7;
+}
+
+.appName {
+  font-size: 1.5rem;
+  text-shadow: 1px 1px;
+}
+
+.container {
+  display: flex;
+  flex-flow: column;
+  justify-content:space-around;
+  padding: 16px;
+  margin: 16px;
+}
+
+.senderProfile {
+  display: flex;
+  flex-flow: column;
+  justify-content:space-around;
+  border-bottom: 1px solid black;
+  padding: 8px;
+  margin-bottom: 16px;
+}
+
+.browseFile {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+input[type='button'] {
+    margin: 2px;
+    padding: 4px 4px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 10px;
+    border-radius: 5px;
+}
+
+input[type='text'] {
+    padding: 3px 5px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px
+}
+
+.token {
+  display: flex;
+  flex-flow: column;
+}
+
+/* unvisited link */
+a:link {
+    color: #FF0000;
+}
+
+/* visited link */
+a:visited {
+    color: #00FF00;
+}
+
+/* mouse over link */
+a:hover {
+    color: #FF00FF;
+}
+
+/* selected link */
+a:active {
+    color: #0000FF;
+}
+
+.receiverProfile {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+}
+
+.fileListContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.fileListContainer div{
+  display: flex;
+}
+
+div span {
+  display: inline-block;
+  padding: 10px;
+  margin: 5px;
+  background: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 25vw;
+  text-overflow: ellipsis;
+}
+
+.alert {
+  display: none;
+  align-self: center;
+  justify-content:space-between;
+  width: 40%;
+  padding: 10px;
+  color: white
+}
+
+.error {
+  background-color: rgba(255,179,179,0.5);
+}

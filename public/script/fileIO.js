@@ -4,7 +4,9 @@ let currentChunk
 let incomingFileInfo
 let incomingFileData
 let bytesReceived
-
+let progressSpan
+let progressBar
+let statusSpan
 // Sending file
 function shareFile (file) {
   currentChunk = 0
@@ -12,10 +14,11 @@ function shareFile (file) {
     {
       type: 'metadata',
       filetype: file.type,
-      fileSize: file.size,
-      fileName: file.name
+      size: file.size,
+      name: file.name
     }))
-  console.log('[shareFile] file.size = ', file.size)
+  setStatusAndProgressVars(file)
+  statusSpan.innerHTML = 'Sending...'
   readNextChunk()
 }
 
@@ -26,45 +29,73 @@ const readNextChunk = () => {
 }
 
 fileReader.onload = () => {
-  console.log('[onload]  fileReader.result = ', fileReader.result)
+  let bytesSent = ((currentChunk / file.size) * 100).toFixed(2) + '%'
+  progressBar.setAttribute('value', bytesSent)
   rtcObj.chunkDataChannel.send(fileReader.result)
   currentChunk++
   if (BYTES_PER_CHUNK * currentChunk < file.size) {
     readNextChunk()
+  } else {
+    statusSpan.innerHTML = 'Sent'
+    closeConnection()
   }
 }
 
 // Receiving file
-const startDownload = data => {
+const startReceiving = data => {
   incomingFileInfo = JSON.parse(data.toString())
   incomingFileData = []
   bytesReceived = 0
+  updateFileList(incomingFileInfo)
+  setStatusAndProgressVars(incomingFileInfo)
   downloadProgress = true
-  console.log('incoming file <b>' + incomingFileInfo.fileName + '</b> of ' + incomingFileInfo.fileSize + ' bytes')
+  statusSpan.innerHTML = 'Receiving..'
 }
 
-const progressDownload = data => {
+const progressReceiving = data => {
   bytesReceived += data.byteLength || data.size
-  console.log('dataReceived = ', bytesReceived)
   incomingFileData.push(data)
-  console.log('progress: ' + ((bytesReceived / incomingFileInfo.fileSize) * 100).toFixed(2) + '%')
-  if (bytesReceived === incomingFileInfo.fileSize) {
-    endDownload()
+  progressBar.setAttribute('value', bytesReceived)
+  if (bytesReceived === incomingFileInfo.size) {
+    endReceiving()
   }
 }
 
-const endDownload = () => {
+const endReceiving = () => {
   downloadProgress = false
   let blob = new Blob(incomingFileData)
   let anchor = document.createElement('a')
-  anchor.href = URL.createObjectURL(blob)
-  anchor.download = incomingFileInfo.fileName
-  anchor.textContent = 'Download file ' + incomingFileInfo.fileName
-  $('msgReceived').appendChild(anchor)
-  if (anchor.click) anchor.click()
-  else {
-    let clickEvent = document.createEvent('MouseEvents')
-    clickEvent.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
-    anchor.dispatchEvent(clickEvent)
-  }
+
+// var downloadUrl = "https://example.org/image.png";
+
+  var downloading = browser.downloads.download({
+    url: blob,
+    filename: incomingFileInfo.name,
+    conflictAction: 'uniquify'
+  })
+
+  downloading.then(onStartedDownload, onFailed)
+  // anchor.href = URL.createObjectURL(blob)
+  // console.log('URL = ', anchor.href)
+  // anchor.download = incomingFileInfo.name
+  // console.log('download = ', anchor.download)
+  // anchor.click()
+  statusSpan.innerHTML = 'Received'
+  // statusSpan.appendChild(anchor)
+  // socket.emit('transferComplete')
+  // closeConnection()
+}
+
+function onStartedDownload(id) {
+console.log(`Started downloading: ${id}`);
+}
+
+function onFailed(error) {
+console.log(`Download failed: ${error}`);
+}
+
+const setStatusAndProgressVars = file => {
+  progressSpan = document.querySelector(`[id='${file.name}'] .progressSpan`)
+  progressBar = document.querySelector(`[id='${file.name}'] .progressSpan .progressBar`)
+  statusSpan = document.querySelector(`[id='${file.name}'] .status`)
 }

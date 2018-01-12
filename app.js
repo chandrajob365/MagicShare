@@ -15,46 +15,42 @@ server.listen(process.env.PORT || 8080, () => {
 
 io.on('connection', socket => {
   let token = socket.handshake.query.token
+  if (token) hideSenderProfile(socket)
   socketDetails[socket.id] = {socket: socket}
-  console.log('[connection] token = ', token)
   if (token) createPairs(socket, token)
-  // emitPeerMsg(socket, token)
   generateToken(socket)
   activateSenderProfile(socket)
   connectPeers(socket)
   msgToSender(socket)
   msgToReceiver(socket)
+  transferComplete(socket)
   unregisterToken(socket)
   disconnect(socket)
 })
 
+const hideSenderProfile = socket => {
+  socket.emit('enableReceiverProfile')
+}
+
 const isPairExist = token => {
-  console.log('[isPairExist] pairedSockets[token]', pairedSockets[token])
   return pairedSockets[token] ? true : false
 }
 
 const createPairs = (socket, token) => {
-  console.log('[createPairs] token = ', token)
-  console.log('[createPairs] tokenGenerator = ', tokenGenerator)
-  console.log('[createPairs] tokenGenerator[%s] = %s', token, tokenGenerator[token])
   if (tokenGenerator[token]) {
     if (!isPairExist(token)) {
-      console.log('[!isPairExist] Entry')
       pairedSockets[token] = {senderId: tokenGenerator[token], recieverId: socket.id}
       socketDetails[socket.id].token = token
       emitPeerMsg(socket, token)
     } else {
-      console.log('[isPairExist]')
       notifyInvalidToken(socket, 'Invalid Token', token)
     }
   } else {
-    console.log('Sender/Generator of token (%s) doesn\'t exist', token)
     notifyInvalidToken(socket, 'Expired Token', token)
   }
 }
 
 const notifyInvalidToken = (socket, type, token) => {
-  console.log('[notifyInvalidToken] token : ', token)
   socket.emit('invalid', {
     type: type,
     token: token
@@ -64,7 +60,6 @@ const notifyInvalidToken = (socket, type, token) => {
 const emitPeerMsg = (socket, token) => {
   let peer = pairedSockets[token]
   if (peer) {
-    console.log('[emitPeerMsg] peer exist')
     socket.emit('peerConnected', {
       fileReceiver: socket.id,
       fileSender: peer.senderId,
@@ -79,7 +74,6 @@ const generateToken = socket => {
   socket.on('generateToken', msg => {
     let token = shortid.generate()
     tokenGenerator[token] = socket.id
-    console.log('[generateToken] tokenGenerator = ', tokenGenerator)
     socketDetails[socket.id]['generatedToken'] = token // For File sender token is named as generated Token
     socket.emit('tokenGenerated', {
       token: token
@@ -89,7 +83,6 @@ const generateToken = socket => {
 
 const activateSenderProfile = socket => {
   socket.on('activateSenderProfile', msg => {
-    console.log('[activateSenderProfile] msg.fileReceiver = ', msg.fileReceiver, '  msg.fileSender = ', msg.fileSender)
     socketDetails[msg.fileSender].socket.emit('activateSenderProfile', {
       type: 'activateSenderProfile',
       fileReceiver: msg.fileReceiver,
@@ -113,21 +106,27 @@ const isValidToken = (socket, token) => {
 
 const msgToSender = socket => {
   socket.on('toFileSender', msg => {
-    console.log('[toFileSender], msg = ', msg)
     socketDetails[msg.fileSender].socket.emit('fileSender', msg)
   })
 }
 
 const msgToReceiver = socket => {
   socket.on('toFileReciever', msg => {
-    console.log('[toFileReciever], msg = ', msg)
     socketDetails[msg.fileReceiver].socket.emit('fileReciever', msg)
+  })
+}
+
+const transferComplete = socket => {
+  socket.on('transferComplete', () => {
+    let token = socketDetails[socket.id].token
+    let fileSender = socketDetails[pairedSockets[token].recieverId].socket
+    fileSender.emit('resetProfile')
+    socket.emit('resetProfile')
   })
 }
 
 const unregisterToken = socket => {
   socket.on('unregisterToken', () => {
-    console.log('[unregisterToken] Entry........')
     let token = socketDetails[socket.id].token
     socketDetails[socket.id].token = '' // reset token key from fileReceiver socketDetail's object
     if (pairedSockets[token]) {
